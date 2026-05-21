@@ -26,13 +26,9 @@ Read the loaded reference file. Then edit. No summary, no commentary, no explana
 
 ## Durable Context Preflight
 
-Run this only when the user mentions memory, preview, previous decisions, or a prior conclusion; when they provide a memory path; or when the current project exposes an obvious local memory summary. Do not hard-code machine-specific memory roots or read raw transcripts.
+See [rules/durable-context.md](../../rules/durable-context.md) for when to read durable context, the read-order budget, and the memory-type mapping.
 
-Read durable context in this order: user-provided path, current project scope, then global preferences. List titles first, then open at most 1-2 relevant summaries. Treat cross-project entries as transferable patterns only.
-
-Map memory types before using them: `decision`, `preference`, and `principle` are voice and format constraints; `pattern` and `learning` are editing checks; `fact` must be verified against current state before it affects factual wording. The supplied text, audience, project docs, current release state, and source material override memory.
-
-For `/write`, durable preferences can set brevity, tone, and social-post shape. They do not override the hard rule to edit in place, keep meaning intact, and avoid change lists unless the user explicitly asks.
+For `/write`, voice and format constraints are `decision`, `preference`, and `principle` entries; editing checks are `pattern` and `learning`. The supplied text, audience, project docs, current release state, and source material override memory. Durable preferences can set brevity, tone, and social-post shape. They do not override the hard rule to edit in place, keep meaning intact, and avoid change lists unless the user explicitly asks.
 
 ## Hard Rules
 

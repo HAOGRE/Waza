@@ -45,10 +45,15 @@ _with_retry() {
 }
 
 _agent_fetch_markdown() {
-  local raw
-  raw=$(npx --yes agent-fetch "$URL" --json 2>/dev/null || true)
-  [ -n "$raw" ] || return 1
+  # Only attempt the local tool if the user has it installed. Avoid auto-
+  # invoking `npx --yes` for an unverified package over the network on every
+  # fetch (the upstream `agent-fetch` package is not on the public registry;
+  # users wire up their own binary if they want this last-resort layer).
+  command -v agent-fetch >/dev/null 2>&1 || return 1
   command -v python3 >/dev/null 2>&1 || return 1
+  local raw
+  raw=$(agent-fetch "$URL" --json 2>/dev/null || true)
+  [ -n "$raw" ] || return 1
   printf '%s' "$raw" | python3 -c '
 import json
 import sys

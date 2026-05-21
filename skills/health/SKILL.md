@@ -21,13 +21,9 @@ Find violations. Identify the misaligned layer. Calibrate to project complexity 
 
 ## Durable Context Preflight
 
-Run this only when the user mentions memory, preview, previous decisions, or a prior conclusion; when they provide a memory path; or when the current project exposes an obvious local memory summary. Do not hard-code machine-specific memory roots or read raw transcripts.
+See [rules/durable-context.md](../../rules/durable-context.md) for when to read durable context, the read-order budget, and the memory-type mapping.
 
-Read durable context in this order: user-provided path, current project scope, then global preferences. List titles first, then open at most 1-2 relevant summaries. Treat cross-project entries as transferable patterns only.
-
-Map memory types before using them: `decision`, `preference`, and `principle` are audit expectations; `pattern` and `learning` are checks for repeated failures; `fact` must be verified against current state before it becomes a finding. CLAUDE.md, installed skills, hooks, MCP config, command output, and live probes override memory.
-
-For `/health`, also flag durable memory problems when they affect behavior: oversized injected summaries, stale or contradictory entries, missing project entrypoint references, or private paths copied into public instructions. Keep these as context findings, not code-review findings.
+For `/health`, audit expectations are `decision`, `preference`, and `principle` entries; checks for repeated failures are `pattern` and `learning`. Current CLAUDE.md, installed skills, hooks, MCP config, command output, and live probes override memory. Also flag durable memory problems when they affect behavior: oversized injected summaries, stale or contradictory entries, missing project entrypoint references, or private paths copied into public instructions. Keep these as context findings, not code-review findings.
 
 ## Step 0: Assess project tier
 

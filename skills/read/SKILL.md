@@ -25,6 +25,10 @@ Convert any URL or local PDF to clean Markdown. No analysis, no summary, no disc
 
 After routing, load `references/read-methods.md` and run the commands for the chosen method.
 
+## Privacy Note
+
+The proxy cascade in `scripts/fetch.sh` sends the requested URL to third-party services (defuddle.md, then r.jina.ai, then any locally installed `agent-fetch` binary). Those services may cache or log the URL; do not feed authenticated, internal-only, or otherwise sensitive URLs through this skill. For private URLs, fetch locally with `curl` plus `pandoc` and skip the cascade.
+
 ## Output Format
 
 ```

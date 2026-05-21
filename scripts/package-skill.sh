@@ -20,26 +20,10 @@ trap 'rm -f "$MANIFEST" "$FILTERED_MANIFEST"; rm -rf "$STAGE"' EXIT
 
 git ls-files --cached --others --exclude-standard > "$MANIFEST"
 
-awk '
-  /^\.claude-plugin\// { next }
-  /^\.claude\// { next }
-  /^\.github\// { next }
-  /^SKILL\.md$/ { next }
-  /^dist\// { next }
-  /^Makefile$/ { next }
-  /^skills-lock\.json$/ { next }
-  /^scripts\/verify-skills\.sh$/ { next }
-  /^scripts\/statusline\.sh$/ { next }
-  /^scripts\/setup-english-coaching\.sh$/ { next }
-  /^scripts\/setup-anti-patterns\.sh$/ { next }
-  /^scripts\/setup-statusline\.sh$/ { next }
-  /^scripts\/package-skill\.sh$/ { next }
-  /^skills\/[^\/]+\/SKILL\.md$/ { next }
-  /(^|\/)__pycache__\// { next }
-  /\.pyc$/ { next }
-  /(^|\/)\.DS_Store$/ { next }
-  { print }
-' "$MANIFEST" > "$FILTERED_MANIFEST"
+# Default-deny: only paths matching packaging.allowlist ship. Structural
+# excludes (per-skill SKILL.md, __pycache__, etc.) live inside the filter.
+python3 "$ROOT/scripts/packaging_filter.py" "$ROOT/packaging.allowlist" \
+  < "$MANIFEST" > "$FILTERED_MANIFEST"
 
 tar -cf - -T "$FILTERED_MANIFEST" | (cd "$STAGE" && tar -xf -)
 

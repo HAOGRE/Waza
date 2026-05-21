@@ -5,7 +5,17 @@ set -e
 CLAUDE_DIR="$HOME/.claude"
 DEST="$CLAUDE_DIR/statusline.sh"
 SETTINGS_FILE="$CLAUDE_DIR/settings.json"
-RAW="https://raw.githubusercontent.com/tw93/Waza/main/scripts/statusline.sh"
+WAZA_REF="${WAZA_REF:-v3.24.0}"
+
+case "$WAZA_REF" in
+  main|v[0-9]*.[0-9]*.[0-9]*) ;;
+  *)
+    echo "Error: WAZA_REF must be main or a release tag like v3.24.0." >&2
+    exit 1
+    ;;
+esac
+
+RAW="https://raw.githubusercontent.com/tw93/Waza/${WAZA_REF}/scripts/statusline.sh"
 
 if ! command -v curl &>/dev/null; then
   echo "Error: curl is required but not installed." >&2

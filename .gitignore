@@ -1,10 +1,10 @@
 # AI Assistant Configuration
+# CLAUDE.md and AGENTS.md are tracked (project instructions for contributors
+# and agents). Local-only overrides stay ignored.
 .claude/
 .agent/
 .qoder/
-CLAUDE.md
 CLAUDE.local.md
-AGENTS.md
 AGENTS.override.md
 skills-lock.json
 

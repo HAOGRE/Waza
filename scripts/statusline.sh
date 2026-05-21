@@ -86,6 +86,13 @@ read_highwater() {
   hw_7d_reset=$(jq -r 'if .seven_day.resets_at == null then "" else (.seven_day.resets_at | tostring) end' "$HIGHWATER_FILE" 2>/dev/null)
 }
 
+# apply_hw: compares live vs high-water marks for a single counter (5h or 7d).
+# Mutates four caller-scope globals by name (no return, by design):
+#   applied_pct, applied_reset       — values to render in the statusline now
+#   applied_hw_pct, applied_hw_reset — values to persist back to highwater.json
+# Caller must read these immediately after the call; the next invocation
+# clobbers them. Side effect is intentional: bash can't return composite values
+# cleanly, and threading four out-params through every call site was worse.
 apply_hw() {
   local live_pct="$1" live_reset="$2" hw_pct="$3" hw_reset="$4"
   local now reset_diff live_ok=0 hw_ok=0

@@ -16,43 +16,15 @@
       "homepage": "https://github.com/tw93/Waza"
     },
     {
-      "name": "waza-health",
-      "description": "Runs a budget-aware Agent Health audit for Codex, Claude Code, agent instructions, verifier surfaces, and AI maintainability when agents ignore instructions, hooks/MCP fail, validation is missing, or AI-written code is hard to maintain. Flags issues by severity. Not for debugging code or reviewing PRs.",
-      "version": "3.24.0",
-      "category": "development",
-      "source": "./skills/health",
-      "homepage": "https://github.com/tw93/Waza",
-      "skills": ["./"],
-      "strict": false
-    },
-    {
-      "name": "waza-think",
-      "description": "Turns rough ideas into approved, decision-complete plans with validated structure before writing code. Covers new features, architecture decisions, and value judgments about whether to build, keep, or remove something. Not for bug fixes or small edits.",
-      "version": "3.24.0",
-      "category": "development",
-      "source": "./skills/think",
-      "homepage": "https://github.com/tw93/Waza",
-      "skills": ["./"],
-      "strict": false
-    },
-    {
       "name": "waza-check",
       "description": "Reviews code diffs and release-ready changes after implementation, executes approved implementation plans, extracts project-specific constraints from repository context, auto-fixes safe issues, and drives approved release, publish, push, release-reaction, and issue/PR follow-through. Also triages issues and PRs when the user mentions them. Not for exploring ideas, debugging, or document prose review.",
       "version": "3.24.0",
       "category": "development",
       "source": "./skills/check",
       "homepage": "https://github.com/tw93/Waza",
-      "skills": ["./"],
-      "strict": false
-    },
-    {
-      "name": "waza-hunt",
-      "description": "Finds root cause of errors, crashes, regressions, screenshot-reported defects, unexpected behavior, and failing tests before applying any fix. Not for code review or new features.",
-      "version": "3.24.0",
-      "category": "development",
-      "source": "./skills/hunt",
-      "homepage": "https://github.com/tw93/Waza",
-      "skills": ["./"],
+      "skills": [
+        "./"
+      ],
       "strict": false
     },
     {
@@ -62,7 +34,45 @@
       "category": "development",
       "source": "./skills/design",
       "homepage": "https://github.com/tw93/Waza",
-      "skills": ["./"],
+      "skills": [
+        "./"
+      ],
+      "strict": false
+    },
+    {
+      "name": "waza-health",
+      "description": "Runs a budget-aware Agent Health audit for Codex, Claude Code, agent instructions, verifier surfaces, and AI maintainability when agents ignore instructions, hooks/MCP fail, validation is missing, or AI-written code is hard to maintain. Flags issues by severity. Not for debugging code or reviewing PRs.",
+      "version": "3.24.0",
+      "category": "development",
+      "source": "./skills/health",
+      "homepage": "https://github.com/tw93/Waza",
+      "skills": [
+        "./"
+      ],
+      "strict": false
+    },
+    {
+      "name": "waza-hunt",
+      "description": "Finds root cause of errors, crashes, regressions, screenshot-reported defects, unexpected behavior, and failing tests before applying any fix. Not for code review or new features.",
+      "version": "3.24.0",
+      "category": "development",
+      "source": "./skills/hunt",
+      "homepage": "https://github.com/tw93/Waza",
+      "skills": [
+        "./"
+      ],
+      "strict": false
+    },
+    {
+      "name": "waza-learn",
+      "description": "Runs a six-phase research workflow to turn unfamiliar domains or collected sources into publish-ready output. Not for quick lookups or single-file reads.",
+      "version": "3.24.0",
+      "category": "development",
+      "source": "./skills/learn",
+      "homepage": "https://github.com/tw93/Waza",
+      "skills": [
+        "./"
+      ],
       "strict": false
     },
     {
@@ -72,7 +82,21 @@
       "category": "development",
       "source": "./skills/read",
       "homepage": "https://github.com/tw93/Waza",
-      "skills": ["./"],
+      "skills": [
+        "./"
+      ],
+      "strict": false
+    },
+    {
+      "name": "waza-think",
+      "description": "Turns rough ideas into approved, decision-complete plans with validated structure before writing code. Covers new features, architecture decisions, and value judgments about whether to build, keep, or remove something. Not for bug fixes or small edits.",
+      "version": "3.24.0",
+      "category": "development",
+      "source": "./skills/think",
+      "homepage": "https://github.com/tw93/Waza",
+      "skills": [
+        "./"
+      ],
       "strict": false
     },
     {
@@ -82,17 +106,9 @@
       "category": "development",
       "source": "./skills/write",
       "homepage": "https://github.com/tw93/Waza",
-      "skills": ["./"],
-      "strict": false
-    },
-    {
-      "name": "waza-learn",
-      "description": "Runs a six-phase research workflow to turn unfamiliar domains or collected sources into publish-ready output. Not for quick lookups or single-file reads.",
-      "version": "3.15.0",
-      "category": "development",
-      "source": "./skills/learn",
-      "homepage": "https://github.com/tw93/Waza",
-      "skills": ["./"],
+      "skills": [
+        "./"
+      ],
       "strict": false
     }
   ]
