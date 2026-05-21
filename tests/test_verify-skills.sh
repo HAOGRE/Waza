@@ -19,7 +19,7 @@ t = t.replace('---\n', '', 1)
 i = t.find('\n---\n')
 p.write_text(t[:i] + t[i+5:])
 "
-if (cd "$tmpdir/repo" && ./scripts/verify-skills.sh >"$tmpdir/frontmatter.out" 2>"$tmpdir/frontmatter.err"); then
+if (cd "$tmpdir/repo" && python3 scripts/verify_skills.py --root . >"$tmpdir/frontmatter.out" 2>"$tmpdir/frontmatter.err"); then
   echo "verify-skills should reject missing frontmatter delimiters"; exit 1
 fi
 grep -q 'INVALID FRONTMATTER' "$tmpdir/frontmatter.err"
@@ -33,7 +33,7 @@ d = json.load(open(p))
 d['plugins'].append({'name':'waza-ghost','description':'x','version':'1.0.0','category':'development','source':'./skills/ghost','homepage':'https://example.com'})
 open(p,'w').write(json.dumps(d, indent=2) + '\n')
 "
-if (cd "$tmpdir/repo2" && ./scripts/verify-skills.sh >"$tmpdir/market.out" 2>"$tmpdir/market.err"); then
+if (cd "$tmpdir/repo2" && python3 scripts/verify_skills.py --root . >"$tmpdir/market.out" 2>"$tmpdir/market.err"); then
   echo "verify-skills should reject marketplace-only entries"; exit 1
 fi
 grep -q 'MISSING SKILL DIRECTORY: ghost' "$tmpdir/market.err"
@@ -49,7 +49,7 @@ for entry in d['plugins']:
         entry['source'] = './skills/read'
 open(p,'w').write(json.dumps(d, indent=2) + '\n')
 "
-if (cd "$tmpdir/repo3" && ./scripts/verify-skills.sh >"$tmpdir/source.out" 2>"$tmpdir/source.err"); then
+if (cd "$tmpdir/repo3" && python3 scripts/verify_skills.py --root . >"$tmpdir/source.out" 2>"$tmpdir/source.err"); then
   echo "verify-skills should reject wrong source paths"; exit 1
 fi
 grep -q 'WRONG SOURCE: waza-check' "$tmpdir/source.err"
@@ -61,7 +61,7 @@ from pathlib import Path
 p = Path('$tmpdir/repo4/skills/check/SKILL.md')
 p.write_text(p.read_text() + '\n[broken](missing-target.md)\n')
 "
-if (cd "$tmpdir/repo4" && ./scripts/verify-skills.sh >"$tmpdir/link.out" 2>"$tmpdir/link.err"); then
+if (cd "$tmpdir/repo4" && python3 scripts/verify_skills.py --root . >"$tmpdir/link.out" 2>"$tmpdir/link.err"); then
   echo "verify-skills should reject broken markdown links"; exit 1
 fi
 grep -q 'BROKEN MARKDOWN LINK' "$tmpdir/link.err"
@@ -69,7 +69,7 @@ grep -q 'BROKEN MARKDOWN LINK' "$tmpdir/link.err"
 # Case 5: RESOLVER.md references a skill directory that doesn't exist.
 copy_repo "$tmpdir/repo5"
 printf '\n| trigger | skills/ghost/SKILL.md |\n' >> "$tmpdir/repo5/skills/RESOLVER.md"
-if (cd "$tmpdir/repo5" && ./scripts/verify-skills.sh >"$tmpdir/resolver.out" 2>"$tmpdir/resolver.err"); then
+if (cd "$tmpdir/repo5" && python3 scripts/verify_skills.py --root . >"$tmpdir/resolver.out" 2>"$tmpdir/resolver.err"); then
   echo "verify-skills should reject stale RESOLVER references"; exit 1
 fi
 grep -q 'RESOLVER REFERENCES MISSING SKILL: ghost' "$tmpdir/resolver.err"
@@ -77,7 +77,7 @@ grep -q 'RESOLVER REFERENCES MISSING SKILL: ghost' "$tmpdir/resolver.err"
 # Case 6: unescaped pipe in a markdown table data row.
 copy_repo "$tmpdir/repo6"
 printf '\n| Col1 | Col2 |\n| --- | --- |\n| a | b | c |\n' >> "$tmpdir/repo6/skills/check/SKILL.md"
-if (cd "$tmpdir/repo6" && ./scripts/verify-skills.sh >"$tmpdir/pipe.out" 2>"$tmpdir/pipe.err"); then
+if (cd "$tmpdir/repo6" && python3 scripts/verify_skills.py --root . >"$tmpdir/pipe.out" 2>"$tmpdir/pipe.err"); then
   echo "verify-skills should reject unescaped pipe in table data row"; exit 1
 fi
 grep -q 'UNESCAPED PIPE IN TABLE' "$tmpdir/pipe.err"
@@ -93,7 +93,7 @@ for e in d['plugins']:
         e['version'] = '3.0.0'
 open(p,'w').write(json.dumps(d, indent=2) + '\n')
 "
-if (cd "$tmpdir/repo7" && ./scripts/verify-skills.sh >"$tmpdir/bundle.out" 2>"$tmpdir/bundle.err"); then
+if (cd "$tmpdir/repo7" && python3 scripts/verify_skills.py --root . >"$tmpdir/bundle.out" 2>"$tmpdir/bundle.err"); then
   echo "verify-skills should reject bundle version drift from VERSION"; exit 1
 fi
 grep -q 'VERSION DRIFT: waza bundle' "$tmpdir/bundle.err"

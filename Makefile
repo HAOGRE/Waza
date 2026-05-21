@@ -6,12 +6,22 @@ PROJECT_KEY := $(shell printf '%s' "$(CURDIR)" | sed 's|[/_]|-|g; s|^-||')
 TEST_FILES := $(filter-out tests/test_helpers.sh,$(wildcard tests/test_*.sh))
 SMOKE_TESTS := $(patsubst tests/test_%.sh,smoke-%,$(TEST_FILES))
 
-.PHONY: test verify-docs verify-generated verify-scripts verify-routing package regenerate $(SMOKE_TESTS)
+.PHONY: test verify-docs verify-generated verify-scripts verify-routing verify-unit package regenerate $(SMOKE_TESTS)
 
-test: verify-docs verify-generated verify-routing verify-scripts $(SMOKE_TESTS)
+test: verify-docs verify-generated verify-routing verify-scripts verify-unit $(SMOKE_TESTS)
 
 verify-docs:
-	./scripts/verify-skills.sh
+	python3 scripts/verify_skills.py --root .
+
+# Python unit tests. Live in tests/python/ and target the small pure-logic
+# pieces of verify_skills and build_metadata that the shell smoke tests
+# cannot exercise directly. Skipped gracefully if pytest is not installed.
+verify-unit:
+	@if python3 -c "import pytest" 2>/dev/null; then \
+	  python3 -m pytest tests/python/ -q; \
+	else \
+	  echo "verify-unit: skipped (pytest not installed; run: pip install --user pytest)"; \
+	fi
 
 # Regenerate marketplace.json (and any future generated files) from VERSION +
 # SKILL.md frontmatter. Single source of truth lives there.
@@ -22,7 +32,7 @@ verify-generated:
 	python3 scripts/build_metadata.py --check
 
 verify-routing:
-	./scripts/check-routing-drift.sh
+	python3 scripts/check_routing_drift.py --root .
 
 verify-scripts:
 	git diff --check
@@ -37,11 +47,15 @@ verify-scripts:
 	fi
 	python3 -m py_compile \
 	  scripts/verify_skills.py \
+	  scripts/skill_frontmatter.py \
+	  scripts/skill_checks.py \
 	  scripts/build_metadata.py \
 	  scripts/packaging_filter.py \
 	  scripts/check_routing_drift.py \
+	  scripts/validate_package.py \
 	  skills/read/scripts/fetch_feishu.py \
 	  skills/read/scripts/fetch_weixin.py \
+	  skills/read/scripts/fetch_local.py \
 	  skills/health/scripts/check_doc_refs.py \
 	  skills/health/scripts/check_verifier_output.py \
 	  skills/health/scripts/check_agent_context.py \
