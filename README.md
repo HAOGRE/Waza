@@ -121,7 +121,7 @@ A minimal statusline for Claude Code: context window, 5-hour quota, and 7-day qu
 </div>
 
 ```bash
-curl -sL https://raw.githubusercontent.com/tw93/Waza/v3.26.0/scripts/setup-statusline.sh | bash
+curl -sL https://raw.githubusercontent.com/tw93/Waza/v3.27.0/scripts/setup-statusline.sh | bash
 ```
 
 **Codex** has native statusline items. Add to `~/.codex/config.toml`:
@@ -144,10 +144,10 @@ Optional rule for English practice. When your prompt contains an English mistake
 
 ```bash
 # Claude Code
-curl -sL https://raw.githubusercontent.com/tw93/Waza/v3.26.0/scripts/setup-rule.sh | bash -s -- english claude-code
+curl -sL https://raw.githubusercontent.com/tw93/Waza/v3.27.0/scripts/setup-rule.sh | bash -s -- english claude-code
 
 # Codex
-curl -sL https://raw.githubusercontent.com/tw93/Waza/v3.26.0/scripts/setup-rule.sh | bash -s -- english codex
+curl -sL https://raw.githubusercontent.com/tw93/Waza/v3.27.0/scripts/setup-rule.sh | bash -s -- english codex
 ```
 
 ### Anti-Patterns
@@ -155,17 +155,17 @@ curl -sL https://raw.githubusercontent.com/tw93/Waza/v3.26.0/scripts/setup-rule.
 Optional always-on guardrails for cross-skill behaviors: stop acting before reading, no hallucinated paths, no scope creep, no unsolicited summaries. Skill-agnostic, applies in every session.
 
 ```bash
-curl -sL https://raw.githubusercontent.com/tw93/Waza/v3.26.0/scripts/setup-rule.sh | bash -s -- anti-patterns claude-code
+curl -sL https://raw.githubusercontent.com/tw93/Waza/v3.27.0/scripts/setup-rule.sh | bash -s -- anti-patterns claude-code
 ```
 
-Use `codex` instead of `claude-code` for Codex. Curl URLs are pinned to the current release tag for reproducibility; swap `v3.26.0` for `main` if you want bleeding-edge scripts.
+Use `codex` instead of `claude-code` for Codex. Curl URLs are pinned to the current release tag for reproducibility; swap `v3.27.0` for `main` if you want bleeding-edge scripts.
 
 ### Routing Hint
 
 Optional pointer that tells the host to prefer Waza skills when a request matches their triggers. Useful for Codex, Pi, and other agents that do not auto-route from skill `description`. Claude Code already routes through descriptions, so this is opt-in even there.
 
 ```bash
-curl -sL https://raw.githubusercontent.com/tw93/Waza/v3.26.0/scripts/setup-rule.sh | bash -s -- waza-routing claude-code
+curl -sL https://raw.githubusercontent.com/tw93/Waza/v3.27.0/scripts/setup-rule.sh | bash -s -- waza-routing claude-code
 ```
 
 Use `codex` instead of `claude-code` for Codex.
