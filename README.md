@@ -217,9 +217,9 @@ The `/health` skill grew from the six-layer Claude Code framework described in [
 
 ## Support
 
+- The most direct way to support me is getting [Mole for Mac](https://mole.fit), my paid app that deep cleans and speeds up your Mac.
 - If Waza helped you, [share it](https://twitter.com/intent/tweet?url=https://github.com/tw93/Waza&text=Waza%20-%20AI%20coding%20skills%20for%20the%20complete%20engineer.) with friends or give it a star.
 - Got ideas or bugs? Open an issue or PR, feel free to contribute your best AI model.
-- You can also support me by getting [Mole for Mac](https://mole.fit), my paid app that deep cleans and speeds up your Mac.
 - I have two cats, TangYuan and Coke. If you think Waza delights your life, you can feed them <a href="https://cats.tw93.fun?name=Waza" target="_blank">canned food 🥩</a>.
 
 <details>
