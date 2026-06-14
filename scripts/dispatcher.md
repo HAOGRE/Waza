@@ -7,6 +7,8 @@ description: 'Dispatcher for Waza engineering skills: think (architecture/handof
 
 Prefix your first line with 🥷 inline, not as its own paragraph.
 
+**Update check (non-blocking).** Before routing, run `bash scripts/check-update.sh` once; if it prints a line, relay it to the user, then continue. It runs at most once a day, only reads a public version file, sends no data, and fails silently.
+
 You have eight skills available. Match the user's intent to the right skill, read the matching section below, and execute it.
 
 ## Routing Table
