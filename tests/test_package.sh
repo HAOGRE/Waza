@@ -39,7 +39,7 @@ for forbidden in \
     echo "forbidden file leaked into package: $forbidden"; exit 1
   fi
 done
-if grep -qE '^(docs|tests|\.github|\.claude-plugin)/' "$tmpdir/manifest"; then
+if grep -qE '^(docs|tests|\.github|\.claude-plugin|\.codex-plugin|\.agents|plugins)/' "$tmpdir/manifest"; then
   echo "forbidden directory leaked into package"; exit 1
 fi
 

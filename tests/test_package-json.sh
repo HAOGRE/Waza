@@ -44,6 +44,8 @@ if missing:
 
 forbidden = {
     ".claude-plugin/marketplace.json",
+    ".agents/plugins/marketplace.json",
+    "plugins/waza/.codex-plugin/plugin.json",
     ".github/workflows/test.yml",
     "dist/waza.zip",
     "tests/test_package.sh",

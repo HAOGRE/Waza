@@ -73,3 +73,26 @@ def test_render_dispatcher_alphabetical():
     apple_idx = out.index("apple")
     zebra_idx = out.index("zebra")
     assert apple_idx < zebra_idx
+
+
+def test_build_codex_plugin_manifest_shape():
+    manifest = bm.build_codex_plugin("9.9.9")
+    assert manifest["name"] == "waza"
+    assert manifest["version"] == "9.9.9"
+    assert manifest["skills"] == "./skills/"
+    assert manifest["interface"]["displayName"] == "Waza"
+    assert manifest["interface"]["category"] == "Developer Tools"
+    assert len(manifest["interface"]["defaultPrompt"]) <= 3
+
+
+def test_build_codex_marketplace_points_at_repo_root():
+    marketplace = bm.build_codex_marketplace()
+    assert marketplace["name"] == "waza"
+    entry = marketplace["plugins"][0]
+    assert entry["name"] == "waza"
+    assert entry["source"] == {"source": "local", "path": "./"}
+    assert entry["policy"] == {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL",
+    }
+    assert entry["category"] == "Developer Tools"

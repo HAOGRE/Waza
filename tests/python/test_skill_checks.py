@@ -9,6 +9,8 @@ import pytest
 
 from skill_checks import (
     check_anti_patterns_contract,
+    check_codex_marketplace,
+    check_codex_plugin,
     check_description_conformance,
     check_outcome_contract,
     check_portable_skill_surface,
@@ -122,6 +124,93 @@ def test_outcome_contract_missing_field_rejected(tmp_path, capsys):
     with pytest.raises(SystemExit):
         check_outcome_contract([path])
     assert "INCOMPLETE OUTCOME CONTRACT" in capsys.readouterr().err
+
+
+# ---- Codex plugin metadata ------------------------------------------------
+
+
+def write_codex_manifest(root, version="1.2.3", display_name="Waza"):
+    plugin_root = root / "plugins" / "waza"
+    plugin_dir = plugin_root / ".codex-plugin"
+    plugin_dir.mkdir(parents=True)
+    (root / "skills" / "check").mkdir(parents=True)
+    (root / "skills" / "check" / "SKILL.md").write_text("skill body\n")
+    (root / "rules").mkdir()
+    (root / "rules" / "waza-routing.md").write_text("routing rule\n")
+    (plugin_root / "skills" / "check").mkdir(parents=True)
+    (plugin_root / "skills" / "check" / "SKILL.md").write_text("skill body\n")
+    (plugin_root / "rules").mkdir()
+    (plugin_root / "rules" / "waza-routing.md").write_text("routing rule\n")
+    (plugin_dir / "plugin.json").write_text(
+        """{
+  "name": "waza",
+  "version": "%s",
+  "description": "Engineering workflow skills for Codex.",
+  "author": {"name": "Tw93"},
+  "homepage": "https://github.com/tw93/Waza",
+  "repository": "https://github.com/tw93/Waza",
+  "license": "MIT",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "%s",
+    "developerName": "Tw93",
+    "category": "Developer Tools",
+    "websiteURL": "https://github.com/tw93/Waza",
+    "defaultPrompt": ["Use Waza check"]
+  }
+}
+"""
+        % (version, display_name)
+    )
+
+
+def write_codex_marketplace(root, source_path="./plugins/waza"):
+    market_dir = root / ".agents" / "plugins"
+    market_dir.mkdir(parents=True)
+    (root / "plugins" / "waza" / ".codex-plugin").mkdir(parents=True)
+    (root / "plugins" / "waza" / ".codex-plugin" / "plugin.json").write_text("{}")
+    (market_dir / "marketplace.json").write_text(
+        """{
+  "name": "waza",
+  "interface": {"displayName": "Waza"},
+  "plugins": [
+    {
+      "name": "waza",
+      "source": {"source": "local", "path": "%s"},
+      "policy": {"installation": "AVAILABLE", "authentication": "ON_INSTALL"},
+      "category": "Developer Tools"
+    }
+  ]
+}
+"""
+        % source_path
+    )
+
+
+def test_codex_plugin_happy_path(tmp_path, capsys):
+    write_codex_manifest(tmp_path)
+    check_codex_plugin(tmp_path, "1.2.3")
+    assert "ok: Codex plugin manifest pinned to 1.2.3" in capsys.readouterr().out
+
+
+def test_codex_plugin_rejects_version_drift(tmp_path, capsys):
+    write_codex_manifest(tmp_path, version="0.0.0")
+    with pytest.raises(SystemExit):
+        check_codex_plugin(tmp_path, "1.2.3")
+    assert "CODEX PLUGIN FIELD DRIFT" in capsys.readouterr().err
+
+
+def test_codex_marketplace_happy_path(tmp_path, capsys):
+    write_codex_marketplace(tmp_path)
+    check_codex_marketplace(tmp_path)
+    assert "ok: Codex marketplace exposes waza plugin" in capsys.readouterr().out
+
+
+def test_codex_marketplace_rejects_wrong_source(tmp_path, capsys):
+    write_codex_marketplace(tmp_path, source_path="./skills")
+    with pytest.raises(SystemExit):
+        check_codex_marketplace(tmp_path)
+    assert "CODEX MARKETPLACE ENTRY DRIFT" in capsys.readouterr().err
 
 
 # ---- check_anti_patterns_contract -----------------------------------------

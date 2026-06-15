@@ -27,11 +27,46 @@ if (cd "$tmpdir/drift" && python3 scripts/build_metadata.py --check >"$tmpdir/dr
 fi
 grep -q 'DRIFT:' "$tmpdir/drift.err"
 
+# Tampered Codex plugin metadata must also detect drift.
+copy_repo "$tmpdir/codex-drift"
+python3 -c "
+import json
+p = '$tmpdir/codex-drift/plugins/waza/.codex-plugin/plugin.json'
+d = json.load(open(p))
+d['interface']['displayName'] = 'Tampered'
+open(p, 'w').write(json.dumps(d, indent=2) + '\n')
+p = '$tmpdir/codex-drift/.agents/plugins/marketplace.json'
+d = json.load(open(p))
+d['plugins'][0]['category'] = 'Tampered'
+open(p, 'w').write(json.dumps(d, indent=2) + '\n')
+"
+if (cd "$tmpdir/codex-drift" && python3 scripts/build_metadata.py --check >"$tmpdir/codex-drift.out" 2>"$tmpdir/codex-drift.err"); then
+  echo "build_metadata --check should detect tampered Codex plugin metadata"; exit 1
+fi
+grep -q 'plugins/waza/.codex-plugin/plugin.json is out of sync' "$tmpdir/codex-drift.err"
+grep -q '.agents/plugins/marketplace.json is out of sync' "$tmpdir/codex-drift.err"
+
+# Extra files in the generated Codex plugin tree must not linger.
+copy_repo "$tmpdir/codex-extra"
+mkdir -p "$tmpdir/codex-extra/plugins/waza/tmp"
+printf '%s\n' 'stale' > "$tmpdir/codex-extra/plugins/waza/tmp/stale.txt"
+if (cd "$tmpdir/codex-extra" && python3 scripts/build_metadata.py --check >"$tmpdir/codex-extra.out" 2>"$tmpdir/codex-extra.err"); then
+  echo "build_metadata --check should detect extra generated Codex plugin files"; exit 1
+fi
+grep -q 'extra file in the generated Codex plugin tree' "$tmpdir/codex-extra.err"
+
 # Default --write mode regenerates from frontmatter + VERSION.
 copy_repo "$tmpdir/regen"
 printf '%s\n' '{"plugins": []}' > "$tmpdir/regen/.claude-plugin/marketplace.json"
+rm -rf "$tmpdir/regen/.codex-plugin" "$tmpdir/regen/.agents" "$tmpdir/regen/plugins"
 (cd "$tmpdir/regen" && python3 scripts/build_metadata.py >"$tmpdir/regen.out")
 test "$(jq '.plugins | length' "$tmpdir/regen/.claude-plugin/marketplace.json")" -eq 9
+test "$(jq -r '.name' "$tmpdir/regen/plugins/waza/.codex-plugin/plugin.json")" = "waza"
+test "$(jq -r '.skills' "$tmpdir/regen/plugins/waza/.codex-plugin/plugin.json")" = "./skills/"
+test -f "$tmpdir/regen/plugins/waza/skills/check/SKILL.md"
+test -f "$tmpdir/regen/plugins/waza/rules/waza-routing.md"
+test "$(jq -r '.plugins[0].source.path' "$tmpdir/regen/.agents/plugins/marketplace.json")" = "./plugins/waza"
+test "$(jq -r '.plugins[0].policy.installation' "$tmpdir/regen/.agents/plugins/marketplace.json")" = "AVAILABLE"
 test "$(jq -r '.name' "$tmpdir/regen/package.json")" = "@tw93/waza"
 test "$(jq -r '.pi.skills[0]' "$tmpdir/regen/package.json")" = "./skills"
 test "$(jq -r '.publishConfig.access' "$tmpdir/regen/package.json")" = "public"

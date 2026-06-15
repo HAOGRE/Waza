@@ -57,10 +57,12 @@ This installs `/think`, `/design`, `/check`, `/hunt`, `/write`, `/learn`, `/read
 **Codex**
 
 ```bash
-npx skills add tw93/Waza -a codex -g -y
+codex plugin marketplace add tw93/Waza
+codex plugin add waza@waza
 ```
 
-Install just one with `npx skills add tw93/Waza --skill think -a codex -g -y`. Codex sessions can invoke installed skills by name or link to the installed `SKILL.md` path shown by `npx skills path tw93/Waza`.
+This installs Waza as a Codex plugin from the repo marketplace, so future updates can use `codex plugin marketplace upgrade waza` followed by `codex plugin add waza@waza`.
+If you prefer the legacy skills installer, use `npx skills add tw93/Waza -a codex -g -y`; install just one with `npx skills add tw93/Waza --skill think -a codex -g -y`.
 
 **Antigravity**
 
@@ -107,6 +109,7 @@ npx skills update -g -y
 ```
 
 Marketplace installs use `claude plugin update <skill>`. Claude Desktop users can replace the old skill with the latest [waza.zip](https://github.com/tw93/Waza/releases/latest/download/waza.zip).
+Codex plugin installs use `codex plugin marketplace upgrade waza`, then `codex plugin add waza@waza` to refresh the installed plugin snapshot.
 Pi users can run `pi update npm:@tw93/waza`, or `pi update --extensions` to update all installed Pi packages.
 To hear about new versions, watch [GitHub Releases](https://github.com/tw93/Waza/releases) for Waza.
 

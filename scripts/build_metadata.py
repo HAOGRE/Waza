@@ -7,6 +7,11 @@ Source of truth:
 
 Generated files:
   - .claude-plugin/marketplace.json    full plugin manifest
+  - plugins/waza/.codex-plugin/plugin.json
+                                        Codex plugin manifest
+  - plugins/waza/skills/               Codex plugin skill mirror
+  - plugins/waza/rules/                Codex plugin rule mirror
+  - .agents/plugins/marketplace.json   Codex repo marketplace
   - README.md                          install URLs pinned to VERSION
   - package.json                       npm/Pi package metadata pinned to VERSION
   - scripts/setup-rule.sh              default WAZA_REF pinned to VERSION
@@ -26,6 +31,7 @@ import argparse
 import difflib
 import json
 import re
+import shutil
 import sys
 from pathlib import Path
 
@@ -35,9 +41,9 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from skill_frontmatter import parse_frontmatter  # noqa: E402
 
 
-# Hand-maintained marketplace constants. Kept here (not in frontmatter) because
-# they describe the Waza project itself, not any single skill.
-MARKETPLACE_TOP = {
+# Hand-maintained marketplace/plugin constants. Kept here (not in frontmatter)
+# because they describe the Waza project itself, not any single skill.
+CLAUDE_MARKETPLACE_TOP = {
     "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
     "name": "waza",
     "description": (
@@ -60,7 +66,20 @@ BUNDLE_DESCRIPTION = (
 )
 
 CATEGORY = "development"
+CODEX_CATEGORY = "Developer Tools"
 HOMEPAGE = "https://github.com/tw93/Waza"
+REPOSITORY = "https://github.com/tw93/Waza"
+
+AUTHOR = {
+    "name": "Tw93",
+    "email": "hitw93@gmail.com",
+    "url": "https://github.com/tw93",
+}
+
+CODEX_DESCRIPTION = (
+    "Engineering workflow skills for Codex: think, check, hunt, design, read, "
+    "write, learn, and health."
+)
 
 
 def read_version(root: Path) -> str:
@@ -90,6 +109,7 @@ def collect_skill_metadata(root: Path) -> list[dict]:
 
 
 def build_marketplace(version: str, skills: list[dict]) -> dict:
+    """Build the Claude Code plugin marketplace metadata."""
     plugins = [
         {
             "name": "waza",
@@ -117,11 +137,80 @@ def build_marketplace(version: str, skills: list[dict]) -> dict:
                 "strict": False,
             }
         )
-    return {**MARKETPLACE_TOP, "plugins": plugins}
+    return {**CLAUDE_MARKETPLACE_TOP, "plugins": plugins}
 
 
-def render_marketplace(marketplace: dict) -> str:
-    return json.dumps(marketplace, indent=2, ensure_ascii=False) + "\n"
+def render_json(data: dict) -> str:
+    return json.dumps(data, indent=2, ensure_ascii=False) + "\n"
+
+
+def build_codex_plugin(version: str) -> dict:
+    return {
+        "name": "waza",
+        "version": version,
+        "description": CODEX_DESCRIPTION,
+        "author": AUTHOR,
+        "homepage": HOMEPAGE,
+        "repository": REPOSITORY,
+        "license": "MIT",
+        "keywords": [
+            "codex",
+            "skills",
+            "engineering-workflow",
+            "code-review",
+            "debugging",
+            "planning",
+            "writing",
+        ],
+        "skills": "./skills/",
+        "interface": {
+            "displayName": "Waza",
+            "shortDescription": "Engineering workflow skills for Codex",
+            "longDescription": (
+                "Waza packages eight engineering habits as Codex skills: "
+                "think for planning, check for review, hunt for debugging, "
+                "design for frontend work, read for source intake, write for "
+                "prose, learn for domain research, and health for agent "
+                "configuration audits."
+            ),
+            "developerName": "Tw93",
+            "category": CODEX_CATEGORY,
+            "capabilities": [
+                "Interactive",
+                "Write",
+            ],
+            "websiteURL": HOMEPAGE,
+            "defaultPrompt": [
+                "Use Waza think to plan this change",
+                "Use Waza check to review this diff",
+                "Use Waza hunt to debug this failure",
+            ],
+            "brandColor": "#111827",
+        },
+    }
+
+
+def build_codex_marketplace() -> dict:
+    return {
+        "name": "waza",
+        "interface": {
+            "displayName": "Waza",
+        },
+        "plugins": [
+            {
+                "name": "waza",
+                "source": {
+                    "source": "local",
+                    "path": "./plugins/waza",
+                },
+                "policy": {
+                    "installation": "AVAILABLE",
+                    "authentication": "ON_INSTALL",
+                },
+                "category": CODEX_CATEGORY,
+            }
+        ],
+    }
 
 
 def build_package_json(version: str) -> str:
@@ -234,6 +323,36 @@ def diff(label: str, expected: str, actual: str) -> str:
     )
 
 
+def bytes_diff(label: str, expected: bytes, actual: bytes) -> str:
+    return diff(
+        label,
+        expected.decode("utf-8", errors="replace"),
+        actual.decode("utf-8", errors="replace"),
+    )
+
+
+def collect_codex_plugin_tree(root: Path, plugin_manifest_rendered: str) -> dict[str, bytes]:
+    """Build the generated file set for the Codex plugin directory.
+
+    Codex installs only the directory referenced by marketplace source.path, so
+    the plugin tree contains real copies of the skill and rule files instead of
+    symlinks or references back to the repository root.
+    """
+    generated = {
+        "plugins/waza/.codex-plugin/plugin.json": plugin_manifest_rendered.encode()
+    }
+    for source_name in ("skills", "rules"):
+        source_root = root / source_name
+        if not source_root.exists():
+            raise SystemExit(f"ERROR: missing required Codex plugin source tree {source_root}")
+        for path in sorted(source_root.rglob("*")):
+            if not path.is_file():
+                continue
+            rel = path.relative_to(root).as_posix()
+            generated[f"plugins/waza/{rel}"] = path.read_bytes()
+    return generated
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -253,10 +372,18 @@ def main() -> int:
     version = read_version(root)
     skills = collect_skill_metadata(root)
     marketplace = build_marketplace(version, skills)
-    rendered = render_marketplace(marketplace)
+    rendered = render_json(marketplace)
+    codex_plugin_rendered = render_json(build_codex_plugin(version))
+    codex_marketplace_rendered = render_json(build_codex_marketplace())
+    codex_plugin_tree = collect_codex_plugin_tree(root, codex_plugin_rendered)
     package_rendered = build_package_json(version)
 
     target = root / ".claude-plugin" / "marketplace.json"
+    codex_marketplace_target = root / ".agents" / "plugins" / "marketplace.json"
+    generated_json_files = [
+        (target, rendered, "Claude Code marketplace"),
+        (codex_marketplace_target, codex_marketplace_rendered, "Codex marketplace"),
+    ]
     package_json = root / "package.json"
     package_actual = package_json.read_text() if package_json.exists() else ""
     readme = root / "README.md"
@@ -281,17 +408,46 @@ def main() -> int:
     dispatcher_rendered = render_dispatcher(dispatcher_template.read_text(), skills)
 
     if args.check:
-        actual = target.read_text() if target.exists() else ""
         drift = False
-        if actual != rendered:
-            print(
-                f"DRIFT: {target.relative_to(root)} is out of sync with "
-                f"VERSION + SKILL.md frontmatter.\n"
-                f"Run scripts/build_metadata.py (no flags) to regenerate.",
-                file=sys.stderr,
-            )
-            sys.stderr.write(diff("marketplace.json", rendered, actual))
-            drift = True
+        for generated_path, expected, label in generated_json_files:
+            actual = generated_path.read_text() if generated_path.exists() else ""
+            if actual != expected:
+                rel = generated_path.relative_to(root).as_posix()
+                print(
+                    f"DRIFT: {rel} is out of sync with VERSION + "
+                    f"SKILL.md frontmatter.\n"
+                    f"Run scripts/build_metadata.py (no flags) to regenerate.",
+                    file=sys.stderr,
+                )
+                sys.stderr.write(diff(rel, expected, actual))
+                drift = True
+        for rel, expected in codex_plugin_tree.items():
+            path = root / rel
+            actual = path.read_bytes() if path.exists() else b""
+            if actual != expected:
+                print(
+                    f"DRIFT: {rel} is out of sync with repository skills/rules "
+                    f"and Codex plugin metadata.\n"
+                    f"Run scripts/build_metadata.py (no flags) to regenerate.",
+                    file=sys.stderr,
+                )
+                sys.stderr.write(bytes_diff(rel, expected, actual))
+                drift = True
+        codex_plugin_root = root / "plugins" / "waza"
+        if codex_plugin_root.exists():
+            expected_paths = set(codex_plugin_tree)
+            for path in sorted(codex_plugin_root.rglob("*")):
+                if not path.is_file():
+                    continue
+                rel = path.relative_to(root).as_posix()
+                if rel not in expected_paths:
+                    print(
+                        f"DRIFT: {rel} is an extra file in the generated "
+                        "Codex plugin tree.\n"
+                        f"Run scripts/build_metadata.py (no flags) to regenerate.",
+                        file=sys.stderr,
+                    )
+                    drift = True
         if readme_actual != readme_rendered:
             print(
                 "DRIFT: README.md installer URLs must use latest release assets.\n"
@@ -331,16 +487,26 @@ def main() -> int:
             drift = True
         if drift:
             return 1
-        print(f"ok: {target.relative_to(root)} matches generator")
+        for generated_path, _, _ in generated_json_files:
+            print(f"ok: {generated_path.relative_to(root)} matches generator")
+        print("ok: plugins/waza Codex plugin tree matches generator")
         print("ok: README.md install URLs use latest release assets")
         print(f"ok: package.json pinned to v{version}")
         print(f"ok: installer defaults pinned to v{version}")
         print(f"ok: {dispatcher_target.relative_to(root)} matches generator")
         return 0
 
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(rendered)
-    print(f"wrote: {target.relative_to(root)} ({len(rendered)} bytes)")
+    for generated_path, expected, _ in generated_json_files:
+        generated_path.parent.mkdir(parents=True, exist_ok=True)
+        generated_path.write_text(expected)
+        print(f"wrote: {generated_path.relative_to(root)} ({len(expected)} bytes)")
+    codex_plugin_root = root / "plugins" / "waza"
+    shutil.rmtree(codex_plugin_root, ignore_errors=True)
+    for rel, expected in codex_plugin_tree.items():
+        path = root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(expected)
+    print(f"wrote: plugins/waza ({len(codex_plugin_tree)} generated files)")
     if package_actual != package_rendered:
         package_json.write_text(package_rendered)
         print(f"wrote: package.json (pinned version to v{version})")

@@ -105,7 +105,14 @@ def check_skill_files(root: Path):
 
 
 def check_marketplace(root: Path, expected_version: str, skill_names: set[str], skill_descriptions: dict[str, str]):
-    """Validate marketplace.json shape:
+    """Validate generated Claude Code and Codex marketplace metadata."""
+    check_claude_marketplace(root, expected_version, skill_names, skill_descriptions)
+    check_codex_plugin(root, expected_version)
+    check_codex_marketplace(root)
+
+
+def check_claude_marketplace(root: Path, expected_version: str, skill_names: set[str], skill_descriptions: dict[str, str]):
+    """Validate Claude Code marketplace.json shape:
 
     - One bundle entry: name == "waza", source == "./".
     - Per-skill entries: name == "waza-<skill>", source == "./skills/<skill>".
@@ -200,6 +207,135 @@ def check_marketplace(root: Path, expected_version: str, skill_names: set[str], 
             f"  Update the 'waza' entry in .claude-plugin/marketplace.json to match VERSION."
         )
     print(f"ok: all versions in lock-step with VERSION={expected_version}")
+
+
+def check_codex_plugin(root: Path, expected_version: str):
+    """Validate Codex plugin manifest shape."""
+    plugin_root = root / "plugins" / "waza"
+    manifest_path = plugin_root / ".codex-plugin" / "plugin.json"
+    if not manifest_path.exists():
+        fail(
+            "MISSING CODEX PLUGIN MANIFEST: expected "
+            "plugins/waza/.codex-plugin/plugin.json "
+            "so Codex can install Waza as a plugin from the repo marketplace"
+        )
+    manifest = json.loads(manifest_path.read_text())
+    required = {
+        "name": "waza",
+        "version": expected_version,
+        "skills": "./skills/",
+        "license": "MIT",
+        "homepage": "https://github.com/tw93/Waza",
+        "repository": "https://github.com/tw93/Waza",
+    }
+    for key, expected in required.items():
+        actual = manifest.get(key)
+        if actual != expected:
+            fail(
+                f"CODEX PLUGIN FIELD DRIFT: plugins/waza/.codex-plugin/plugin.json {key}="
+                f"{actual!r} expected {expected!r}"
+            )
+    if not (manifest.get("description") or "").strip():
+        fail("CODEX PLUGIN DESCRIPTION: plugins/waza/.codex-plugin/plugin.json needs description")
+    author = manifest.get("author")
+    if not isinstance(author, dict) or not author.get("name"):
+        fail("CODEX PLUGIN AUTHOR: plugins/waza/.codex-plugin/plugin.json needs author.name")
+    interface = manifest.get("interface")
+    if not isinstance(interface, dict):
+        fail("CODEX PLUGIN INTERFACE: plugins/waza/.codex-plugin/plugin.json needs interface object")
+    interface_required = {
+        "displayName": "Waza",
+        "developerName": "Tw93",
+        "category": "Developer Tools",
+        "websiteURL": "https://github.com/tw93/Waza",
+    }
+    for key, expected in interface_required.items():
+        actual = interface.get(key)
+        if actual != expected:
+            fail(
+                f"CODEX PLUGIN INTERFACE DRIFT: plugins/waza/.codex-plugin/plugin.json "
+                f"interface.{key}={actual!r} expected {expected!r}"
+            )
+    default_prompt = interface.get("defaultPrompt")
+    if (
+        not isinstance(default_prompt, list)
+        or not default_prompt
+        or len(default_prompt) > 3
+        or any(not isinstance(item, str) or len(item) > 128 for item in default_prompt)
+    ):
+        fail(
+            "CODEX PLUGIN DEFAULT PROMPTS: interface.defaultPrompt must contain "
+            "1-3 strings, each <=128 chars"
+        )
+    if not (plugin_root / "skills").is_dir():
+        fail(
+            "CODEX PLUGIN SKILLS PATH: plugins/waza/.codex-plugin/plugin.json "
+            "points at missing plugins/waza/skills/"
+        )
+    for source_name in ("skills", "rules"):
+        source_root = root / source_name
+        mirror_root = plugin_root / source_name
+        for source_path in sorted(source_root.rglob("*")):
+            if not source_path.is_file():
+                continue
+            mirror_path = mirror_root / source_path.relative_to(source_root)
+            if not mirror_path.exists():
+                fail(
+                    f"CODEX PLUGIN MIRROR MISSING: {mirror_path.relative_to(root)} "
+                    f"must mirror {source_path.relative_to(root)}"
+                )
+            if mirror_path.read_bytes() != source_path.read_bytes():
+                fail(
+                    f"CODEX PLUGIN MIRROR DRIFT: {mirror_path.relative_to(root)} "
+                    f"differs from {source_path.relative_to(root)}"
+                )
+    print(f"ok: Codex plugin manifest pinned to {expected_version}")
+
+
+def check_codex_marketplace(root: Path):
+    """Validate repo-local Codex marketplace shape."""
+    marketplace_path = root / ".agents" / "plugins" / "marketplace.json"
+    if not marketplace_path.exists():
+        fail(
+            "MISSING CODEX MARKETPLACE: expected .agents/plugins/marketplace.json "
+            "so `codex plugin marketplace add tw93/Waza` can discover Waza"
+        )
+    marketplace = json.loads(marketplace_path.read_text())
+    if marketplace.get("name") != "waza":
+        fail("CODEX MARKETPLACE NAME: .agents/plugins/marketplace.json name must be 'waza'")
+    interface = marketplace.get("interface")
+    if not isinstance(interface, dict) or interface.get("displayName") != "Waza":
+        fail(
+            "CODEX MARKETPLACE DISPLAY NAME: .agents/plugins/marketplace.json "
+            "must set interface.displayName to 'Waza'"
+        )
+    plugins = marketplace.get("plugins")
+    if not isinstance(plugins, list) or len(plugins) != 1:
+        fail("CODEX MARKETPLACE PLUGINS: expected exactly one Waza plugin entry")
+    entry = plugins[0]
+    expected_entry = {
+        "name": "waza",
+        "source": {
+            "source": "local",
+            "path": "./plugins/waza",
+        },
+        "policy": {
+            "installation": "AVAILABLE",
+            "authentication": "ON_INSTALL",
+        },
+        "category": "Developer Tools",
+    }
+    if entry != expected_entry:
+        fail(
+            "CODEX MARKETPLACE ENTRY DRIFT: .agents/plugins/marketplace.json "
+            f"plugins[0]={entry!r} expected {expected_entry!r}"
+        )
+    if not (root / "plugins" / "waza" / ".codex-plugin" / "plugin.json").exists():
+        fail(
+            "CODEX MARKETPLACE SOURCE: source.path './plugins/waza' must resolve to a plugin "
+            "root containing .codex-plugin/plugin.json"
+        )
+    print("ok: Codex marketplace exposes waza plugin")
 
 
 def check_references(root: Path, skill_files: list[Path]):
@@ -638,6 +774,21 @@ def check_readme_install_command(root: Path):
             f"README INSTALL COMMAND: README.md must include {expected!r}\n"
             f"  Waza's public install path depends on this exact string."
         )
+    expected_codex_marketplace = "codex plugin marketplace add tw93/Waza"
+    if expected_codex_marketplace not in text:
+        fail(
+            "README CODEX MARKETPLACE COMMAND: README.md must include "
+            f"{expected_codex_marketplace!r}\n"
+            f"  Codex plugin installs should use the repo marketplace so users can "
+            f"upgrade without rerunning npx skills add."
+        )
+    expected_codex_install = "codex plugin add waza@waza"
+    if expected_codex_install not in text:
+        fail(
+            "README CODEX PLUGIN COMMAND: README.md must include "
+            f"{expected_codex_install!r}\n"
+            f"  The Codex marketplace entry must document the plugin install selector."
+        )
     expected_pi = "pi install npm:@tw93/waza"
     if expected_pi not in text:
         fail(
@@ -668,8 +819,8 @@ def check_readme_install_command(root: Path):
                 f"without per-release README churn."
             )
     print(
-        "ok: README installs nested skills, Pi package, Antigravity, OpenCode, "
-        "and latest installer assets"
+        "ok: README installs nested skills, Codex plugin marketplace, Pi package, "
+        "Antigravity, OpenCode, and latest installer assets"
     )
 
 
