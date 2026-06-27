@@ -30,7 +30,7 @@ HOME="$test_home" npx --yes skills add "$tmpdir/repo" -a claude-code -g -y \
   >"$tmpdir/install.out" 2>&1
 
 # All 8 SKILL.md files landed under ~/.claude/skills/.
-expected=(check design health hunt learn read think write)
+expected=(check health hunt learn read think ui write)
 for skill in "${expected[@]}"; do
   target="$test_home/.claude/skills/$skill/SKILL.md"
   if [ ! -f "$target" ]; then

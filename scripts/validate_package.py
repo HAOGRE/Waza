@@ -17,7 +17,7 @@ import sys
 from pathlib import Path
 
 
-EXPECTED_SKILLS = ["think", "design", "check", "hunt", "write", "learn", "read", "health"]
+EXPECTED_SKILLS = ["think", "ui", "check", "hunt", "write", "learn", "read", "health"]
 
 
 def main() -> int:

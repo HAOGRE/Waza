@@ -11,18 +11,8 @@
 
 <br/>
 
-## Why
-
-Waza (技, わざ) is a Japanese martial arts term for technique: a move practiced until it becomes instinct.
-
-A good engineer does not just write code. They think through requirements, review their own work, debug systematically, design interfaces that feel intentional, and read primary sources. They write clearly, and learn new domains by producing output, not consuming content.
-
-AI is more capable than most engineers at raw output. But without structure, that capability drifts into generic, imprecise work. Waza channels it into precision: eight skills that set clear goals and constraints, then let the model do what it does best.
-
-Part of a trilogy: [Kaku](https://github.com/tw93/Kaku) (書く) writes code, [Waza](https://github.com/tw93/Waza) (技) drills habits, [Kami](https://github.com/tw93/Kami) (紙) ships documents. Think of them as a family: Kaku is the dad, Waza the big sister, Kami the little sister.
-
 <div align="center">
-  <img src="https://gw.alipayobjects.com/zos/k/qa/waza_repaired_v4.svg" width="1000" />
+  <img src="assets/waza_skills.svg" width="1000" />
 </div>
 
 ## Skills
@@ -32,7 +22,7 @@ Each engineering habit gets an installed skill. In Claude Code, type the slash c
 | Skill | When | What it does |
 | :--- | :--- | :--- |
 | [`/think`](skills/think/SKILL.md) | Before building anything new | Challenges the problem, pressure-tests the design, and produces a decision-complete plan another agent can implement. |
-| [`/design`](skills/design/SKILL.md) | Building frontend interfaces | Produces distinctive UI, including screenshot-driven aesthetic iteration, with a committed direction rather than generic defaults. |
+| [`/ui`](skills/ui/SKILL.md) | Building frontend interfaces | Produces distinctive UI, including screenshot-driven aesthetic iteration, with a committed direction rather than generic defaults. |
 | [`/check`](skills/check/SKILL.md) | After a task, before merging or release | Reviews the diff, extracts project-specific constraints, handles approved release/publish/push/reaction follow-through, and verifies with evidence. |
 | [`/hunt`](skills/hunt/SKILL.md) | Any bug, regression, or unexpected behavior | Systematic debugging. Root cause confirmed before any fix is applied, especially when something used to work. |
 | [`/write`](skills/write/SKILL.md) | Writing or editing prose | Rewrites prose to sound natural in Chinese and English. Cuts stiff, formulaic phrasing. |
@@ -68,30 +58,20 @@ codex plugin add waza@waza
 
 **Pi**: `pi install npm:@tw93/waza` (update with `pi update npm:@tw93/waza`). `/health` audits Pi settings alongside Claude Code and Codex.
 
-To hear about new versions, watch [GitHub Releases](https://github.com/tw93/Waza/releases).
-
-## Project Context
-
-Waza keeps the generic programmer habits inside the public skill. `/check` becomes project-aware by reading the target repository's public context and the user's task constraints.
-
-- Project commands come from README files, package manifests, Makefiles, CI workflows, and explicit user instructions.
-- Project hard stops include generated artifacts, protected files, version synchronization, release assets, and domain-specific safety risks.
-- Public docs and examples must not include credentials, certificate paths, private key filenames, tokens, or personal machine details.
-
-See [`skills/check/references/project-context.md`](skills/check/references/project-context.md) for the review context template.
-
 ## Chaining Skills
 
-Skills are designed to be chained together, but transitions are manual. Each skill stops after completing its task and waits for you to decide the next step.
+Skills chain together, but every transition is a manual step you trigger. Each skill finishes its task and stops, waiting for you to decide what comes next.
 
 **Common workflows:**
 
-- **Design a feature**: `/think` → approve → say "implement X" → `/check` → merge
+- **Plan a feature**: `/think` → approve → say "implement X" → `/check` → merge
 - **Ship a fix**: `/hunt` → fix → `/check` → release/publish/push/issue follow-through
 - **Research and write**: `/read` (fetch sources) → `/learn` (synthesize) → `/write` (polish)
 - **Debug and verify**: `/hunt` (find root cause) → fix → `/check` (review changes)
 
-Each arrow represents a manual user action. Skills don't automatically trigger each other.
+## Project Context
+
+Waza ships only generic engineering habits. `/check` becomes project-aware at runtime by reading the target repository's public context (READMEs, package manifests, Makefiles, CI workflows) and your task constraints, never private paths, credentials, or tokens. See [`skills/check/references/project-context.md`](skills/check/references/project-context.md) for the review context template.
 
 ## Extras
 
@@ -138,6 +118,16 @@ curl -sL https://github.com/tw93/Waza/releases/latest/download/setup-rule.sh | b
 
 Curl URLs use the latest GitHub release asset. Set `WAZA_REF=main` before the command if you want bleeding-edge scripts.
 
+## Why
+
+Waza (技, わざ) is a Japanese martial arts term for technique: a move practiced until it becomes instinct.
+
+A good engineer does more than write code. They pressure-test requirements, debug to root cause, review their own diffs, and read primary sources. AI has the raw output for all of it, but without structure that output drifts into generic, imprecise work. Each Waza skill sets a clear goal and the constraints that matter, then steps back and lets the model work. As models improve, that restraint pays compound interest.
+
+Tools like Superpowers and gstack are powerful but heavy: too many skills, too much configuration. Waza stays small, eight skills for the habits that actually matter, each with one job and a clear trigger. Built from real projects and refined through 300+ sessions across 7 projects, every gotcha traces to a real failure. The `/health` skill grew from the six-layer Claude Code framework in [this post](https://tw93.fun/en/2026-03-12/claude.html).
+
+Part of a trilogy: [Kaku](https://github.com/tw93/Kaku) (書く) writes code, [Waza](https://github.com/tw93/Waza) (技) drills habits, [Kami](https://github.com/tw93/Kami) (紙) ships documents. Think of them as a family: Kaku is the dad, Waza the big sister, Kami the little sister.
+
 ## Uninstall
 
 ```bash
@@ -150,21 +140,10 @@ rm -f ~/.claude/rules/waza-routing.md
 
 For Claude Desktop, delete Waza from Customize > Skills. For Codex rule installs, remove the marked Waza blocks from `~/.codex/AGENTS.md`.
 
-## Background
-
-Tools like Superpowers and gstack are impressive but heavy: too many skills, too much configuration, too steep a learning curve.
-
-Every rule the author writes is also a ceiling. The model can only do what the instructions say. Waza goes the other way: each skill sets a clear goal and the constraints that matter, then steps back. As models improve, that restraint pays compound interest.
-
-Eight skills for the habits that actually matter. Each does one thing, has a clear trigger, and stays out of the way. Built from real projects, refined through 300+ sessions across 7 projects. Every gotcha traces to a real failure.
-
-The `/health` skill grew from the six-layer Claude Code framework described in [this post](https://tw93.fun/en/2026-03-12/claude.html), and now covers Codex, Claude Code, Pi, verifier surfaces, and AI maintainability.
-
 ## Support
 
 - The most direct way to support me is getting [Mole for Mac](https://mole.fit), my paid Mac cleanup app.
-- If Waza helped you, [share it](https://twitter.com/intent/tweet?url=https://github.com/tw93/Waza&text=Waza%20-%20AI%20coding%20skills%20for%20the%20complete%20engineer.) with friends or give it a star.
-- Got ideas or bugs? Open an issue or PR, feel free to contribute your best AI model.
+- If Waza helped you, give it a star, [share it](https://twitter.com/intent/tweet?url=https://github.com/tw93/Waza&text=Waza%20-%20AI%20coding%20skills%20for%20the%20complete%20engineer.), or open an issue or PR.
 - I have two cats, TangYuan and Coke. If you think Waza delights your life, you can feed them <a href="https://cats.tw93.fun?name=Waza" target="_blank">canned food 🥩</a>.
 
 <details>

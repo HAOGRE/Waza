@@ -1,6 +1,6 @@
 ---
 name: waza
-description: 'Dispatcher for Waza engineering skills: think (architecture/handoff), design (artifact-grounded UI), check (review/release gates), hunt (runtime debugging/regression), write (prose/release copy), learn (research), read (URL/PDF fetch), health (agent config and AI maintainability audit).'
+description: 'Dispatcher for Waza engineering skills: think (architecture/handoff), ui (artifact-grounded interface design), check (review/release gates), hunt (runtime debugging/regression), write (prose/release copy), learn (research), read (URL/PDF fetch), health (agent config and AI maintainability audit).'
 ---
 
 # Waza: Engineering Skills Dispatcher
@@ -24,12 +24,12 @@ You have eight skills available. Match the user's intent to the right skill, rea
 
 If the message could match multiple skills, use these disambiguation rules:
 
-1. Most specific wins: `/design` is more specific than `/think` for UI decisions.
+1. Most specific wins: `/ui` is more specific than `/think` for UI decisions.
 2. URL in message: start with `/read`. If the content is research material, chain to `/learn`.
 3. Code already done vs. code broken: done/PR -> `/check`; error/broken -> `/hunt`.
 4. Config/maintainability vs. code: Codex/Claude misbehaving, hooks/MCP, `/health` token usage, AI coding code rot, unclear context, missing verification, or stale verifier output -> `/health`; user code errors -> `/hunt`.
 5. Release action vs. release prose: commit/tag/publish/push/release reactions/close issue -> `/check`; write release notes/changelog text -> `/write`.
-6. Screenshot taste vs. screenshot regression: visual taste complaint -> `/design`; broken render/state/generated output or used-to-work evidence -> `/hunt`.
+6. Screenshot taste vs. screenshot regression: visual taste complaint -> `/ui`; broken render/state/generated output or used-to-work evidence -> `/hunt`.
 7. From scratch vs. editing: new long-form output -> `/learn`; existing draft to polish -> `/write`.
 8. "Judge this" + error -> `/hunt`; "judge this" + should we keep it -> `/think`.
 9. Still ambiguous: read both skills' "Not for" sections; use exclusion. If still unclear, ask the user.

@@ -48,7 +48,7 @@ FORCED_GITHUB_TOOL_RE = re.compile(
 )
 CJK_RE = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]")
 
-DURABLE_CONTEXT_SKILLS = {"think", "check", "hunt", "design", "write", "health"}
+DURABLE_CONTEXT_SKILLS = {"think", "check", "hunt", "ui", "write", "health"}
 
 NINJA_PREFIX = "Prefix your first line with 🥷 inline, not as its own paragraph."
 OUTCOME_CONTRACT_FIELDS = ("Outcome:", "Done when:", "Evidence:", "Output:")

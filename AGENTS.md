@@ -4,7 +4,7 @@ This file is the canonical agent guide for the Waza repository. `CLAUDE.md` is a
 
 ## Project
 
-Waza is a skill collection for engineering workflows. The repository contains eight skills: `think`, `design`, `check`, `hunt`, `write`, `learn`, `read`, and `health`.
+Waza is a skill collection for engineering workflows. The repository contains eight skills: `think`, `ui`, `check`, `hunt`, `write`, `learn`, `read`, and `health`.
 
 ## Repository Map
 
@@ -54,7 +54,7 @@ Examples: `verify_skills.py` is a script; `rules/english.md` and `rules/chinese.
 - Put adaptive, judgment-heavy workflows in skills.
 - Put deterministic checks, lookups, and table-driven validation in scripts.
 - `rules/anti-patterns.md` owns cross-skill always-on behavioral guardrails (AI failure modes that apply regardless of active skill). Per-skill gotchas stay in each `skills/*/SKILL.md` Gotchas table; a gotcha belongs in `rules/anti-patterns.md` only when it applies identically across all eight skills.
-- Catalogs consolidate, they do not accumulate. This covers `rules/anti-patterns.md` rows and every reference example list, banned-phrase list, and replacement table (`skills/write/references/*`, `skills/design/references/*`, and the like). Before adding a row, pattern, banned phrase, or example, find the existing row or principle it instantiates and fold it in; never append a near-synonym or a third encoding of a rule already stated above. Keep wording generic enough to ship outside this repo. A reference file that re-lists items it already covers under a numbered pattern is drift, not coverage.
+- Catalogs consolidate, they do not accumulate. This covers `rules/anti-patterns.md` rows and every reference example list, banned-phrase list, and replacement table (`skills/write/references/*`, `skills/ui/references/*`, and the like). Before adding a row, pattern, banned phrase, or example, find the existing row or principle it instantiates and fold it in; never append a near-synonym or a third encoding of a rule already stated above. Keep wording generic enough to ship outside this repo. A reference file that re-lists items it already covers under a numbered pattern is drift, not coverage.
 - The no-op test prunes skill prose sentence by sentence: a line earns its place only if it changes behavior versus the model's default. A line that re-teaches what a capable model already does (`be thorough` to an already-thorough agent) is a no-op you pay context load to say nothing; delete the whole sentence, do not trim words from it. When unsure whether a line states a default, assume it does and cut.
 - Leading words collapse a restated quality into one pretrained token the model already thinks with: `fast, deterministic, low-overhead` becomes a `tight` loop; `a repro you trust` becomes the loop that goes `red` on the bug. One token anchors a whole region of behavior and gives a sharper hook than the spelled-out triad, at fewer tokens. When a skill states the same quality three times, that is the passage to collapse into a leading word.
 - Keep `skills/RESOLVER.md` in sync when a skill description, trigger, or scope changes.

@@ -50,7 +50,7 @@ CLAUDE_MARKETPLACE_TOP = {
     "name": "waza",
     "description": (
         "Personal skill collection for Claude Code, Codex, Antigravity, "
-        "OpenCode, and Pi: think, check, hunt, design, read, write, learn, "
+        "OpenCode, and Pi: think, check, hunt, ui, read, write, learn, "
         "and health for agent config and AI maintainability audits."
     ),
     "owner": {
@@ -62,7 +62,7 @@ CLAUDE_MARKETPLACE_TOP = {
 BUNDLE_DESCRIPTION = (
     "Installs the full Waza toolkit. Registers all eight skills under the "
     "waza namespace, callable as /waza:think, /waza:check, /waza:hunt, "
-    "/waza:design, /waza:read, /waza:write, /waza:learn, and /waza:health. "
+    "/waza:ui, /waza:read, /waza:write, /waza:learn, and /waza:health. "
     "For one skill on Claude Code v2.1.143 or newer, use /plugin install "
     "waza-<name>@waza."
 )
@@ -79,7 +79,7 @@ AUTHOR = {
 }
 
 CODEX_DESCRIPTION = (
-    "Engineering workflow skills for Codex: think, check, hunt, design, read, "
+    "Engineering workflow skills for Codex: think, check, hunt, ui, read, "
     "write, learn, and health."
 )
 CODEX_MIRROR_IGNORED_DIRS = {
@@ -188,7 +188,7 @@ def build_codex_plugin(version: str) -> dict:
             "longDescription": (
                 "Waza packages eight engineering habits as Codex skills: "
                 "think for planning, check for review, hunt for debugging, "
-                "design for frontend work, read for source intake, write for "
+                "ui for frontend work, read for source intake, write for "
                 "prose, learn for domain research, and health for agent "
                 "configuration audits."
             ),
