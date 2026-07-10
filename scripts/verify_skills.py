@@ -27,6 +27,7 @@ from skill_checks import (  # noqa: E402
     check_anti_patterns_contract,
     check_attribution_leak,
     check_description_conformance,
+    check_context_classifier_literals,
     check_durable_context_and_paths,
     check_english_coaching_guard,
     check_marketplace,
@@ -75,6 +76,7 @@ def main() -> int:
     skill_names = set(skill_descriptions)
     check_description_conformance(skill_descriptions)
     check_outcome_contract(skill_files)
+    check_context_classifier_literals(root, skill_files)
     check_portable_invocations(root, skill_files)
     if (root / "rules" / "durable-context.md").exists():
         check_durable_context_and_paths(root, skill_files)

@@ -56,6 +56,35 @@ ATTRIBUTION_PATTERNS = (
     "cursoragent@cursor.com",
 )
 
+# Direct adversarial instructions can trip provider-side classifiers when they
+# live in Markdown that is injected into a model context. Keep the patterns
+# lexical but do not reproduce the complete trigger strings in this source.
+CONTEXT_CLASSIFIER_PATTERNS = (
+    (
+        "instruction-priority override",
+        re.compile(
+            r"\bignore\s+(?:all\s+)?(?:prior|previous)\s+instructions\b",
+            re.IGNORECASE,
+        ),
+    ),
+    (
+        "role reassignment",
+        re.compile(
+            r"\byou\s+are\s+now\s+(?:x|an?\s+[a-z][a-z-]*|the\s+[a-z][a-z-]*)\b",
+            re.IGNORECASE,
+        ),
+    ),
+    ("false urgency", re.compile(r"\bact\s+now\b", re.IGNORECASE)),
+    (
+        "authority appeal",
+        re.compile(r"\bthe\s+(?:ceo|founder|admin)\s+says\b", re.IGNORECASE),
+    ),
+    (
+        "urgent imperative",
+        re.compile(r"\burgent\s*:\s*do\s+.+?\s+immediately\b", re.IGNORECASE),
+    ),
+)
+
 
 def pipe_count(s: str) -> int:
     n, tick, i = 0, False, 0
@@ -169,6 +198,36 @@ def check_outcome_contract(skill_files: list[Path]):
                 f"  Missing fields: {', '.join(missing)}"
             )
         print(f"ok: outcome contract {path.parent.name}")
+
+
+def check_context_classifier_literals(root: Path, skill_files: list[Path]):
+    """Keep direct adversarial examples out of model-context Markdown."""
+    paths: set[Path] = set()
+    rules_dir = root / "rules"
+    if rules_dir.is_dir():
+        paths.update(rules_dir.rglob("*.md"))
+    for skill_file in skill_files:
+        paths.update(skill_file.parent.rglob("*.md"))
+    for name in ("dispatcher-template.md", "dispatcher.md"):
+        path = root / "scripts" / name
+        if path.exists():
+            paths.add(path)
+
+    offenders: list[str] = []
+    for path in sorted(paths):
+        for lineno, line in enumerate(path.read_text().splitlines(), start=1):
+            for label, pattern in CONTEXT_CLASSIFIER_PATTERNS:
+                if pattern.search(line):
+                    offenders.append(f"{path.relative_to(root)}:{lineno}: {label}")
+
+    if offenders:
+        fail(
+            "PROVIDER-SENSITIVE INSTRUCTION LITERAL IN MODEL CONTEXT:\n  "
+            + "\n  ".join(offenders)
+            + "\n  Describe adversarial behavior by semantic category; do not quote "
+            "the executable instruction in always-loaded rules or skill prose."
+        )
+    print(f"ok: context classifier literals ({len(paths)} Markdown files)")
 
 
 def check_durable_context_and_paths(root: Path, skill_files: list[Path]):
