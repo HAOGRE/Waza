@@ -54,9 +54,9 @@ verify-scripts:
 	echo "py_compile: ok"
 	bash skills/health/scripts/collect-data.sh auto >/tmp/waza-collect-data-$(PROJECT_KEY).out
 	echo "collect-data: ok"
-	rg -n "^=== CONVERSATION SIGNALS ===$$|^=== CONVERSATION EXTRACT ===$$|^=== MCP ACCESS DENIALS ===$$" /tmp/waza-collect-data-$(PROJECT_KEY).out
-	rg -n "^=== AGENT CONFIG SUMMARY ===$$|^=== AGENT INSTRUCTION SURFACE ===$$|^=== CODEX SURFACE ===$$" /tmp/waza-collect-data-$(PROJECT_KEY).out
-	rg -n "^=== AI MAINTAINABILITY SUMMARY ===$$|^maintainability_status: " /tmp/waza-collect-data-$(PROJECT_KEY).out
+	grep -nE "^=== CONVERSATION SIGNALS ===$$|^=== CONVERSATION EXTRACT ===$$|^=== MCP ACCESS DENIALS ===$$" /tmp/waza-collect-data-$(PROJECT_KEY).out
+	grep -nE "^=== AGENT CONFIG SUMMARY ===$$|^=== AGENT INSTRUCTION SURFACE ===$$|^=== CODEX SURFACE ===$$" /tmp/waza-collect-data-$(PROJECT_KEY).out
+	grep -nE "^=== AI MAINTAINABILITY SUMMARY ===$$|^maintainability_status: " /tmp/waza-collect-data-$(PROJECT_KEY).out
 
 # Static pattern rule binds every smoke-<name> phony target to its sibling
 # tests/test_<name>.sh script. Each script is self-contained, sources

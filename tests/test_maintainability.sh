@@ -8,19 +8,7 @@ CHECKER="$ROOT/skills/health/scripts/check-maintainability.sh"
 
 tmpdir=$(make_tmpdir)
 
-# Project layout helper: writes the standard 3-section AGENTS.md.
-write_standard_agents_md() {
-  local file="$1"
-  local boundary="${2:-Do not rewrite unrelated modules.}"
-  printf '%s\n' \
-    '## Project' \
-    'Repository Map: src contains runtime code.' \
-    '## Verification' \
-    'Run `make test` before handoff.' \
-    '## Boundaries' \
-    "$boundary" \
-    > "$file"
-}
+# write_standard_agents_md comes from test_helpers.sh.
 
 # Case 1: clean project -> PASS, verification PASS.
 good="$tmpdir/good"

@@ -230,7 +230,19 @@ def check_context_classifier_literals(root: Path, skill_files: list[Path]):
     print(f"ok: context classifier literals ({len(paths)} Markdown files)")
 
 
-def check_durable_context_and_paths(root: Path, skill_files: list[Path]):
+def check_personal_paths(skill_files: list[Path]):
+    """Skill docs must not hard-code personal home-directory paths."""
+    for path in skill_files:
+        if PERSONAL_PATH_PATTERN.search(path.read_text()):
+            fail(
+                f"PERSONAL ABSOLUTE PATH IN SKILL: {path}\n"
+                f"  Skill docs must not hard-code personal home-directory paths. "
+                f"Use user-provided paths, project-relative paths, or resolver commands instead."
+            )
+    print(f"ok: no personal absolute paths ({len(skill_files)} skills)")
+
+
+def check_durable_context(root: Path, skill_files: list[Path]):
     """Durable context rules must stay portable and evidence-bound.
 
     Each skill in DURABLE_CONTEXT_SKILLS links to rules/durable-context.md for the
@@ -255,13 +267,6 @@ def check_durable_context_and_paths(root: Path, skill_files: list[Path]):
     for path in skill_files:
         skill = path.parent.name
         text = path.read_text()
-        if PERSONAL_PATH_PATTERN.search(text):
-            fail(
-                f"PERSONAL ABSOLUTE PATH IN SKILL: {path}\n"
-                f"  Skill docs must not hard-code personal home-directory paths. "
-                f"Use user-provided paths, project-relative paths, or resolver commands instead."
-            )
-
         has_section = "## Durable Context Preflight" in text
         if skill in DURABLE_CONTEXT_SKILLS and not has_section:
             fail(

@@ -28,7 +28,8 @@ from skill_checks import (  # noqa: E402
     check_attribution_leak,
     check_description_conformance,
     check_context_classifier_literals,
-    check_durable_context_and_paths,
+    check_durable_context,
+    check_personal_paths,
     check_english_coaching_guard,
     check_marketplace,
     check_markdown_links,
@@ -79,7 +80,8 @@ def main() -> int:
     check_context_classifier_literals(root, skill_files)
     check_portable_invocations(root, skill_files)
     if (root / "rules" / "durable-context.md").exists():
-        check_durable_context_and_paths(root, skill_files)
+        check_personal_paths(skill_files)
+        check_durable_context(root, skill_files)
 
     if args.skills_only:
         # Installed copies (e.g. ~/.claude/skills/) don't ship VERSION,

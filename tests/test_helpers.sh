@@ -33,6 +33,21 @@ make_tmpdir() {
   printf '%s\n' "$dir"
 }
 
+# Fixture: the standard 3-section AGENTS.md (Project / Verification /
+# Boundaries) that the agent-context and maintainability smokes both need.
+write_standard_agents_md() {
+  local file="$1"
+  local boundary="${2:-Do not rewrite unrelated modules.}"
+  printf '%s\n' \
+    '## Project' \
+    'Repository Map: src contains runtime code.' \
+    '## Verification' \
+    'Run `make test` before handoff.' \
+    '## Boundaries' \
+    "$boundary" \
+    > "$file"
+}
+
 copy_repo() {
   local dest="$1"
   mkdir -p "$dest"

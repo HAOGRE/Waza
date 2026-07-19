@@ -16,14 +16,7 @@ mkdir -p \
   "$home_dir/.pi/agent/skills/global-skill" \
   "$home_dir/.agents/skills/legacy-skill"
 
-printf '%s\n' \
-  '## Project' \
-  'Repository Map: source lives in src.' \
-  '## Verification' \
-  'Run `make test`.' \
-  '## Boundaries' \
-  'Do not rewrite unrelated modules.' \
-  > "$project/AGENTS.md"
+write_standard_agents_md "$project/AGENTS.md"
 printf '%s\n' 'global codex rule' > "$home_dir/.codex/AGENTS.md"
 
 # config.toml with sensitive keys that must be redacted before output.

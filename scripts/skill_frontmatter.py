@@ -46,6 +46,49 @@ def should_include_codex_mirror_file(path: Path) -> bool:
     return path.suffix not in CODEX_MIRROR_IGNORED_SUFFIXES
 
 
+def iter_codex_source_files(root: Path):
+    """Yield (source_name, source_rel, source_path) for every skills/ and
+    rules/ file that ships in the Codex plugin mirror.
+
+    Single owner of the source-side mirror walk: codegen builds the plugin
+    tree from it and the verifier compares against it, so inclusion-rule
+    changes land in one place.
+    """
+    for source_name in ("skills", "rules"):
+        source_root = root / source_name
+        if not source_root.is_dir():
+            continue
+        for path in sorted(source_root.rglob("*")):
+            if not path.is_file():
+                continue
+            rel = path.relative_to(source_root)
+            if should_include_codex_mirror_file(rel):
+                yield source_name, rel, path
+
+
+def iter_codex_plugin_files(plugin_root: Path):
+    """Yield (plugin_rel, path) for every file under the generated Codex
+    plugin tree that passes the mirror filter. Reverse side of the walk:
+    used to catch stale mirror files regeneration would delete."""
+    if not plugin_root.is_dir():
+        return
+    for path in sorted(plugin_root.rglob("*")):
+        if not path.is_file():
+            continue
+        rel = path.relative_to(plugin_root)
+        if should_include_codex_mirror_file(rel):
+            yield rel, path
+
+
+def skill_ref_diff(text: str, expected: set[str]) -> tuple[list[str], list[str]]:
+    """Diff skills/<name>/SKILL.md references in text against expected names.
+
+    Returns (missing, stale): expected skills the text never references, and
+    referenced skills that do not exist."""
+    referenced = set(SKILL_REF_RE.findall(text))
+    return sorted(expected - referenced), sorted(referenced - expected)
+
+
 def fail(message: str) -> NoReturn:
     print(message, file=sys.stderr)
     raise SystemExit(1)

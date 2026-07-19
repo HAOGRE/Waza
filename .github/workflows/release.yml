@@ -16,7 +16,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y jq ripgrep
+        run: sudo apt-get update && sudo apt-get install -y jq
       - name: Install pytest for unit layer
         run: python3 -m pip install pytest
       - name: Install shellcheck (pinned to keep CI behavior reproducible from local dev)

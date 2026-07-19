@@ -9,7 +9,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from skill_frontmatter import SKILL_REF_RE, fail, parse_frontmatter
+from skill_frontmatter import fail, parse_frontmatter, skill_ref_diff
 
 
 # Quoted user-utterance triggers in rules/waza-routing.md. Covers straight ("),
@@ -33,17 +33,17 @@ def check_resolver(root: Path, skill_names: set[str]):
     if not resolver_path.exists():
         fail(f"MISSING RESOLVER: expected {resolver_path}")
     resolver_text = resolver_path.read_text()
-    for skill in sorted(skill_names):
+    missing, stale = skill_ref_diff(resolver_text, skill_names)
+    if missing:
+        skill = missing[0]
         token = f"skills/{skill}/SKILL.md"
-        if token not in resolver_text:
-            fail(
-                f"RESOLVER GAP: {skill} has no entry in {resolver_path}\n"
-                f"  Add a row to a triggers table that references {token!r}."
-            )
+        fail(
+            f"RESOLVER GAP: {skill} has no entry in {resolver_path}\n"
+            f"  Add a row to a triggers table that references {token!r}."
+        )
+    for skill in sorted(skill_names):
         print(f"ok: resolver entry for {skill}")
 
-    referenced_skills = set(SKILL_REF_RE.findall(resolver_text))
-    stale = sorted(referenced_skills - skill_names)
     if stale:
         fail(f"RESOLVER REFERENCES MISSING SKILL: {', '.join(stale)}")
     print("ok: resolver has no stale skill references")

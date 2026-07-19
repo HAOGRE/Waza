@@ -9,7 +9,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from skill_frontmatter import fail, should_include_codex_mirror_file
+from skill_frontmatter import (
+    fail,
+    should_include_codex_mirror_file,
+)
 
 
 def check_marketplace(root: Path, expected_version: str, skill_names: set[str], skill_descriptions: dict[str, str]):
@@ -118,6 +121,12 @@ def check_claude_marketplace(root: Path, expected_version: str, skill_names: set
 
 
 def check_codex_plugin(root: Path, expected_version: str):
+    """Validate the Codex plugin surface: manifest shape, then mirror integrity."""
+    check_codex_plugin_manifest(root, expected_version)
+    check_codex_plugin_mirror(root)
+
+
+def check_codex_plugin_manifest(root: Path, expected_version: str):
     """Validate Codex plugin manifest shape."""
     plugin_root = root / "plugins" / "waza"
     manifest_path = plugin_root / ".codex-plugin" / "plugin.json"
@@ -180,16 +189,25 @@ def check_codex_plugin(root: Path, expected_version: str):
             "CODEX PLUGIN SKILLS PATH: plugins/waza/.codex-plugin/plugin.json "
             "points at missing plugins/waza/skills/"
         )
+    print(f"ok: Codex plugin manifest pinned to {expected_version}")
+
+
+def check_codex_plugin_mirror(root: Path):
+    """Byte-compare skills/ and rules/ against the generated plugin mirror.
+
+    The verifier owns its traversal independently from codegen, while both
+    share only the declarative cache/noise filter. A broken generator walk
+    must not make its oracle agree on an incomplete tree."""
+    plugin_root = root / "plugins" / "waza"
     for source_name in ("skills", "rules"):
         source_root = root / source_name
-        mirror_root = plugin_root / source_name
         for source_path in sorted(source_root.rglob("*")):
             if not source_path.is_file():
                 continue
             source_rel = source_path.relative_to(source_root)
             if not should_include_codex_mirror_file(source_rel):
                 continue
-            mirror_path = mirror_root / source_rel
+            mirror_path = plugin_root / source_name / source_rel
             if not mirror_path.exists():
                 fail(
                     f"CODEX PLUGIN MIRROR MISSING: {mirror_path.relative_to(root)} "
@@ -200,23 +218,25 @@ def check_codex_plugin(root: Path, expected_version: str):
                     f"CODEX PLUGIN MIRROR DRIFT: {mirror_path.relative_to(root)} "
                     f"differs from {source_path.relative_to(root)}"
                 )
-        # Reverse direction: a mirror file with no source counterpart is stale
-        # output that regeneration would delete; catch it here too so this
-        # check stays symmetric with build_metadata --check.
-        if mirror_root.exists():
-            for mirror_path in sorted(mirror_root.rglob("*")):
-                if not mirror_path.is_file():
-                    continue
-                mirror_rel = mirror_path.relative_to(mirror_root)
-                if not should_include_codex_mirror_file(mirror_rel):
-                    continue
-                if not (source_root / mirror_rel).exists():
-                    fail(
-                        f"CODEX PLUGIN MIRROR EXTRA: {mirror_path.relative_to(root)} "
-                        f"has no source under {source_name}/. "
-                        f"Run scripts/build_metadata.py (no flags) to regenerate."
-                    )
-    print(f"ok: Codex plugin manifest pinned to {expected_version}")
+    # Reverse direction: a mirror file with no source counterpart is stale
+    # output that regeneration would delete.
+    for source_name in ("skills", "rules"):
+        mirror_root = plugin_root / source_name
+        if not mirror_root.exists():
+            continue
+        for mirror_path in sorted(mirror_root.rglob("*")):
+            if not mirror_path.is_file():
+                continue
+            mirror_rel = mirror_path.relative_to(mirror_root)
+            if not should_include_codex_mirror_file(mirror_rel):
+                continue
+            if not (root / source_name / mirror_rel).exists():
+                fail(
+                    f"CODEX PLUGIN MIRROR EXTRA: {mirror_path.relative_to(root)} "
+                    f"has no source under {source_name}/. "
+                    f"Run scripts/build_metadata.py (no flags) to regenerate."
+                )
+    print("ok: Codex plugin mirror matches skills/ and rules/")
 
 
 def check_codex_marketplace(root: Path):
